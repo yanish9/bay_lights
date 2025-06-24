@@ -4,6 +4,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const path = require('path');
 
+const nid = "N_1000";
 
 app.use(express.json());
 
@@ -41,6 +42,7 @@ app.use((req, res, next) => {
 app.post('/update-bay-color', (req, res) => {
 
     console.log(req.body); // Log the request body for debugging
+     const item = req.body;
   const { group, id, color } = req.body;
 
   if (!group || id === undefined || !color) {
@@ -63,6 +65,38 @@ app.post('/update-bay-color', (req, res) => {
     console.log(`💾 Saved: Group ${group} | Bay ${id} | Color ${color}`);
     res.json({ success: true, message: "Bay color saved" });
   });
+
+
+
+  item.nid = nid;
+
+  var jsonString = JSON.stringify(item);
+
+  jsonString = "'" + jsonString + "'";
+  console.log(jsonString);
+
+  const scriptPath = path.join('/home/yan/sx126x_lorawan_hat_code/python/lora/examples/SX126x/', 'transmitter_set_color.py');
+
+  // var l = item.color;
+  // l = l.substring(l.indexOf("(")+1, l.lastIndexOf(")"))
+  // Run the Python script with RGB values as arguments
+  exec(`sudo python3 ${scriptPath} ${jsonString}`, (err, stdout, stderr) => {
+    if (err) {
+      console.error(`Error: ${stderr}`);
+      // return res.status(500).send('Error executing Python script');
+    }
+
+    // Send success response with script output
+    console.log(`Script Output: ${stdout}`);
+    // res.status(200).json({
+    //   status: 'success',
+    //   message: `Color RGB(${item.color}) saved successfully`,
+    // });
+  });
+
+
+
+  
 });
 
 // Optional: View saved bay colors
