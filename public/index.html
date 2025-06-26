@@ -1,203 +1,366 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Golf Bay</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    .bay {
-      width: 100px;
-      height: 100px;
-      margin: 10px;
-      background-color: #9e9e9e;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: background-color 0.3s ease;
-      color: white;
-      border: 2px solid transparent;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <title>Golf Bay</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style> 
 
-    .bay.selected {
-      border: 3px solid yellow;
-    }
-
-    .bay-row {
-      margin-bottom: 30px;
-      justify-content: center;
-    }
-
-    .color-picker {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-bottom: 30px;
-    }
-
-    .color-option {
-      width: 40px;
-      height: 40px;
-      margin: 5px;
-      border-radius: 50%;
-      border: 2px solid white;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-
-    .color-option:hover {
-      transform: scale(1.1);
-    }
-
-    .save-toast {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  background-color: #28a745;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 6px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.5s ease;
-  z-index: 9999;
-}
-
-.save-toast.show {
-  opacity: 1;
-}
-
-  </style>
-</head>
-<body class="bg-dark text-white">
-
-<!-- Top Bar -->
-<nav class="navbar navbar-dark bg-secondary position-relative px-5">
-  <!-- Logo in center -->
-  <div class="position-absolute top-50 start-50 translate-middle">
-    <img src="img/itarget.png" alt="Logo" class="img-fluid mt-3 mb-3" style="max-height: 50px;">
-  </div>
-
-  <!-- Refresh Button on right -->
-  <div class="ms-auto">
-    <button class="btn btn-outline-light" onclick="location.reload()">Refresh</button>
-  </div>
-</nav>
-
-
-  <div class="container text-center mt-5">
-    <h2>Golf Bay</h2>
-
-    <!-- Color Palette -->
-    <div class="color-picker" id="colorPicker"></div>
-
-    <!-- Bays Container -->
-    <div id="bay-container"></div>
-  </div>
-  <div id="saveNotification" class="save-toast">Saving...</div>
-
-
-  <script>
-    const colors = [
-      "#f44336", "#e91e63", "#9c27b0", "#3f51b5", "#2196f3",
-      "#4caf50", "#ffeb3b", "#ff9800", "#795548", "#ffffff"
-    ];
-
-    let selectedBay = null;
-
-    // Build color picker
-    const picker = document.getElementById("colorPicker");
-    colors.forEach((color) => {
-      const div = document.createElement("div");
-      div.className = "color-option";
-      div.style.backgroundColor = color;
-
-     div.onclick = () => {
-  if (selectedBay) {
-    selectedBay.style.backgroundColor = color;
-    showSavingNotification();
-
-    // Get group and id from selectedBay’s parents and attributes
-    const group = selectedBay.closest(".bay-row").getAttribute("data-group");
-    const id = selectedBay.getAttribute("data-id");
-
-    // POST data
-    const payload = {
-      group: group,
-      id: id,
-      color: color
-    };
-
-    fetch('/update-bay-color', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    }).then(response => {
-      if (!response.ok) throw new Error('Network response was not ok');
-      console.log(`Color updated:`, payload);
-    }).catch(error => {
-      console.error('POST failed:', error);
-    });
-  }
-};
-
-
-      picker.appendChild(div);
-    });
-
-    // Create bay layout
-    const totalBays = 20;
-    const baysPerGroup = 5;
-    const container = document.getElementById("bay-container");
-
-    for (let i = 0; i < totalBays; i += baysPerGroup) {
-      const groupIndex = i / baysPerGroup;
-      const groupName = "G" + (groupIndex + 1);
-
-      const row = document.createElement("div");
-      row.className = "d-flex bay-row";
-      row.setAttribute("data-group", groupName);
-
-      for (let j = 0; j < baysPerGroup && (i + j) < totalBays; j++) {
-        const bay = document.createElement("div");
-        bay.className = "bay";
-        bay.innerText = `Bay ${i + j + 1}`;
-        bay.setAttribute("data-id", j);
-
-        bay.onclick = function () {
-          // Unselect previously selected bay-
-          if (selectedBay) {
-            selectedBay.classList.remove("selected");
-          }
-
-          // Select this bay
-          selectedBay = bay;
-          bay.classList.add("selected");
-
-          const group = row.getAttribute("data-group");
-          const id = bay.getAttribute("data-id");
-          console.log(`Selected ${group} - Bay ${id}`);
-        };
-
-        row.appendChild(bay);
+      .bay.selected {
+        border: 3px solid yellow;
       }
 
-      container.appendChild(row);
-    }
+      .bay-row {
+        margin-bottom: 30px;
+        justify-content: center;
+      }
 
-    function showSavingNotification() {
-  const toast = document.getElementById("saveNotification");
-  toast.classList.add("show");
-  setTimeout(() => {
-    toast.classList.remove("show");
-  }, 1500);
+      .color-picker {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-bottom: 30px;
+      }
+
+      .color-option {
+        width: 40px;
+        height: 40px;
+        margin: 5px;
+        border-radius: 50%;
+        border: 2px solid white;
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+
+      .color-option:hover {
+        transform: scale(1.1);
+      }
+      .bay {
+  width: 100px;
+  height: 100px; /* Fixed height */
+  margin: 10px;
+  background-color: #9e9e9e;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Push label to bottom */
+  align-items: center;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  color: white;
+  border: 2px solid transparent;
+  box-sizing: border-box;
+  padding: 6px 4px; /* No bottom padding */
+}
+
+.bay-label {
+  font-size: 16px;
+  text-align: center;
+  width: 100%;
+}
+
+.bay-status {
+  font-size: 12px;
+  width: 100%;
+  text-align: center;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white;
+  margin: 0; /* Remove top/bottom margin */
+  padding: 2px 0;
 }
 
 
-  </script>
-</body>
+
+      .save-toast {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background-color: #28a745;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 6px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.5s ease;
+        z-index: 9999;
+      }
+
+      .save-toast.show {
+        opacity: 1;
+      }
+    </style>
+  </head>
+  <body class="bg-dark text-white">
+    <!-- Top Bar -->
+    <nav class="navbar navbar-dark bg-secondary position-relative px-5">
+      <!-- Logo in center -->
+      <div class="position-absolute top-50 start-50 translate-middle">
+        <img
+          src="img/itarget.png"
+          alt="Logo"
+          class="img-fluid mt-3 mb-3"
+          style="max-height: 50px"
+        />
+      </div>
+
+      <!-- Refresh Button on right -->
+      <div class="ms-auto">
+        <button class="btn btn-outline-light" onclick="location.reload()">
+          Refresh
+        </button>
+      </div>
+    </nav>
+
+    <div class="container text-center mt-5">
+      <h2>Golf Bay</h2>
+
+      <!-- Color Palette -->
+      <div class="color-picker" id="colorPicker"></div>
+
+      <!-- Bays Container -->
+      <div id="bay-container"></div>
+    </div>
+    <div id="saveNotification" class="save-toast">Saving...</div>
+
+    <script src="js/socket.io.js"></script>
+    <script>
+      const socket = io();
+
+      const colors = [
+        "#f44336",
+        "#e91e63",
+        "#9c27b0",
+        "#3f51b5",
+        "#2196f3",
+        "#4caf50",
+        "#ffeb3b",
+        "#ff9800",
+        "#795548",
+        "#ffffff",
+        "#000000",
+      ];
+
+      let selectedBay = null;
+
+      // Build color picker
+      const picker = document.getElementById("colorPicker");
+      colors.forEach((color) => {
+        if (color === "#000000") {
+          // Render OFF as a button
+          div = document.createElement("button");
+          div.className = "btn btn-outline-light m-2";
+          div.innerText = "OFF";
+        } else {
+          div = document.createElement("div");
+          div.className = "color-option";
+          div.style.backgroundColor = color;
+        }
+
+        div.onclick = () => {
+          if (selectedBay) {
+            // selectedBay.style.backgroundColor = color;
+            if (color === "#ffffff") {
+              selectedBay.style.color = "black"; // Change text color to black for white background
+            } else {
+              selectedBay.style.color = "white"; // Change text color to white for other colors
+            }
+
+            const rgbColor = hexToRgbString(color);
+            selectedBay.style.backgroundColor = rgbColor;
+
+            showSavingNotification();
+
+            // Get group and id from selectedBay’s parents and attributes
+            const group = selectedBay
+              .closest(".bay-row")
+              .getAttribute("data-group");
+            const id = selectedBay.getAttribute("data-id");
+            const bay_number = selectedBay.getAttribute("data-bayNum");
+
+            // POST data
+            const payload = {
+              group: group,
+              bay_number: bay_number,
+              id: id,
+              color: rgbColor,
+            };
+
+            console.log(`Saving color for ${group} - Bay ${id}:`, payload);
+
+            fetch("/update-bay-color", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(payload),
+            })
+              .then((response) => {
+                if (!response.ok)
+                  throw new Error("Network response was not ok");
+                console.log(`Color updated:`, payload);
+              })
+              .catch((error) => {
+                console.error("POST failed:", error);
+              });
+          }
+        };
+
+        picker.appendChild(div);
+      });
+
+      // Create bay layout
+      const totalBays = 18;
+      const baysPerGroup = 6;
+      const container = document.getElementById("bay-container");
+
+      for (let i = 0; i < totalBays; i += baysPerGroup) {
+        const groupIndex = i / baysPerGroup;
+        const groupName = "G" + (groupIndex + 1);
+
+        const row = document.createElement("div");
+        row.className = "d-flex bay-row";
+        row.setAttribute("data-group", groupName);
+
+        for (let j = 0; j < baysPerGroup && i + j < totalBays; j++) {
+          const bay = document.createElement("div");
+          bay.className = "bay";
+          const label = document.createElement("div");
+          label.className = "bay-label";
+          label.innerText = `Bay ${i + j + 1}`;
+
+          const status = document.createElement("div");
+          status.className = "bay-status";
+
+          bay.appendChild(label);
+          bay.appendChild(status);
+
+          bay.setAttribute("data-id", j);
+          bay.setAttribute("data-bayNum", i + j + 1);
+
+          bay.onclick = function () {
+            // Unselect previously selected bay-
+            if (selectedBay) {
+              selectedBay.classList.remove("selected");
+            }
+
+            // Select this bay
+            selectedBay = bay;
+            bay.classList.add("selected");
+
+            const group = row.getAttribute("data-group");
+            const id = bay.getAttribute("data-id");
+            const bay_number = bay.getAttribute("data-bayNum");
+
+            console.log(`Selected ${group} - Bay ${id}`);
+          };
+
+          row.appendChild(bay);
+        }
+
+        container.appendChild(row);
+      }
+
+      function showSavingNotification() {
+        const toast = document.getElementById("saveNotification");
+        toast.classList.add("show");
+        setTimeout(() => {
+          toast.classList.remove("show");
+        }, 1500);
+      }
+
+      applyCurrentSavedBayColors();
+
+      function applyCurrentSavedBayColors() {
+        fetch("/bay-colors")
+          .then((response) => response.json())
+          .then((data) => {
+            if (!data.success || !Array.isArray(data.data)) return;
+
+            data.data.forEach((bay) => {
+              const group = bay.group_id;
+              const id = bay.bay_id;
+              const color = bay.color;
+
+              const row = document.querySelector(
+                `.bay-row[data-group="${group}"]`
+              );
+              if (row) {
+                const bayElement = row.querySelector(`.bay[data-id="${id}"]`);
+                if (bayElement) {
+                  bayElement.style.backgroundColor = color;
+                  bayElement.style.color =
+                    color === "rgb(255, 255, 255)" ? "black" : "white"; // Adjust text color
+                }
+              }
+            });
+          })
+          .catch((error) => console.error("Error fetching bay colors:", error));
+      }
+
+      socket.on("bay-status-update", (data) => {
+        console.log("Received bay update:", data);
+
+        for (let i = 0; i < data.length; i++) {
+          const state = data[i].state;
+          const bay_number = data[i].bay_number;
+
+          const row = document.querySelector(`.bay-row[data-group]`);
+          if (row) {
+            const bay = document.querySelector(
+              `.bay[data-bayNum="${bay_number}"]`
+            );
+            if (bay) {
+              // Create a new div with the data
+            const statusDiv = bay.querySelector('.bay-status');
+if (statusDiv) {
+  statusDiv.textContent = ` ${getStateType(state)}`;
+  statusDiv.style.backgroundColor = "#444"; // or set based on state
+}
+
+            }
+          }
+        }
+      });
+
+      function getStateType(state) {
+        switch (state) {
+          case 0:
+            return "In Use";
+          case 1:
+            return "Available";
+          case 2:
+            return "Out of Order";
+          case 3:
+            return "Cleaning";
+          default:
+            return "Unknown";
+        }
+      }
+      // const bay_number = data.bay_number;
+      // const state = data.state;
+
+      // const row = document.querySelector(`.bay-row[data-group="${group}"]`);
+      // if (row) {
+      //   const bay = row.querySelector(`.bay[data-baynum="${bay_number}"]`);
+      //   if (bay) {
+      //     bay.style.backgroundColor = color;
+      //     bay.style.color = (color === "rgb(255, 255, 255)") ? "black" : "white";
+      //   }
+      // }
+      // });
+
+      function hexToRgbString(hex) {
+        const bigint = parseInt(hex.replace("#", ""), 16);
+        const r = (bigint >> 16) & 255;
+        const g = (bigint >> 8) & 255;
+        const b = bigint & 255;
+        return `rgb(${r}, ${g}, ${b})`;
+      }
+    </script>
+  </body>
 </html>
